@@ -1,4 +1,4 @@
-# rahingrany
+# Braddell
 
 > Sir Thomas Braddell CMG FRGS (30 January 1823 – 19 September 1891) was an Irish lawyer, the first Attorney-General of the British Colony of Singapore.
 
