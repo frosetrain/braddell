@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+        <!-- <link rel="stylesheet" type="text/css" href="tailwind.css" /> -->
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script>
+            tailwind.config = {
+                theme: {
+                    fontFamily: {
+                        mono: ["IBM Plex Mono", "monospace"],
+                    },
+                },
+            };
+        </script>
+        <meta charset="utf-8" />
+    </head>
+    <body>
+        <div
+            class="flex w-full flex-col gap-8 bg-slate-100 p-8 dark:bg-slate-900"
+        >
+            <div class="grow">
+                <div class="mb-1 flex justify-between">
+                    <span class="font-medium text-slate-900 dark:text-slate-100"
+                        >Steering</span
+                    >
+                    <span
+                        id="steering-label"
+                        class="font-mono font-medium text-slate-900 dark:text-slate-100"
+                        >NaN</span
+                    >
+                </div>
+                <div class="flex w-full">
+                    <div
+                        id="steering-left"
+                        class="h-2.5 bg-slate-600"
+                        style="width: 50%"
+                    ></div>
+                    <div
+                        id="steering-middle"
+                        class="h-2.5 bg-sky-500"
+                        style="width: 0%"
+                    ></div>
+                    <div
+                        id="steering-right"
+                        class="h-2.5 bg-slate-600"
+                        style="width: 50%"
+                    ></div>
+                </div>
+            </div>
+            <div class="grow">
+                <div class="mb-1 flex justify-between">
+                    <span class="font-medium text-slate-900 dark:text-slate-100"
+                        >Throttle</span
+                    >
+                    <span
+                        id="throttle-label"
+                        class="font-mono font-medium text-slate-900 dark:text-slate-100"
+                        >NaN</span
+                    >
+                </div>
+                <div class="flex w-full">
+                    <div
+                        id="throttle-left"
+                        class="h-2.5 bg-slate-600"
+                        style="width: 50%"
+                    ></div>
+                    <div
+                        id="throttle-middle"
+                        class="h-2.5 bg-green-500"
+                        style="width: 0%"
+                    ></div>
+                    <div
+                        id="throttle-right"
+                        class="h-2.5 bg-slate-600"
+                        style="width: 50%"
+                    ></div>
+                </div>
+            </div>
+            <span
+                id="cruise-label"
+                class="text-orange-500 font-mono font-medium"
+                style="visibility: hidden"
+                >CRUISE</span
+            >
+        </div>
+        <main></main>
+        <script src="sketch.js"></script>
+    </body>
+</html>
