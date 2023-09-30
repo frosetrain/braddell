@@ -1,20 +1,36 @@
 import logging
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from rich.logging import RichHandler
 
-logging.basicConfig(format="%(asctime)s %(message)s", level=logging.DEBUG)
+logging.basicConfig(format="%(message)s", level=logging.DEBUG, handlers=[RichHandler()])
 
-
-class DriveMovements(BaseModel):
-    speed: int
-    turn: int
+origins = ["http://localhost:5500"]
 
 
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
-@app.put("/")
+class DriveMovements(BaseModel):
+    throttle: int
+    steering: int
+
+
+@app.put("/drive/")
 def drive(move: DriveMovements):
     logging.info(move)
-    return move
+
+
+@app.put("/ping/")
+def ping():
+    # logging.info("pong")
+    return "pong"
