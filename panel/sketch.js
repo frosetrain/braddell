@@ -3,7 +3,7 @@ let throttle = 0;
 let cruiseControl = false;
 let steeringLeft, steeringMiddle, steeringRight;
 let throttleLeft, throttleMiddle, throttleRight;
-let cruiseLabel;
+let throttleModeLabel;
 let i = 0;
 let res;
 let apiOnline = false;
@@ -22,7 +22,9 @@ function setup() {
     apiOfflineLabel = new p5.Element(
         document.getElementById("apioffline-label"),
     );
-    cruiseLabel = new p5.Element(document.getElementById("cruise-label"));
+    throttleModeLabel = new p5.Element(
+        document.getElementById("throttle-mode-label"),
+    );
 
     updateBars();
     frameRate(30);
@@ -83,12 +85,22 @@ function keyPressed() {
         throttle = -100;
         updateBars();
     } else if (key === "c") {
+        throttle = 0;
         cruiseControl = cruiseControl ? false : true;
         if (cruiseControl) {
-            cruiseLabel.style("visibility", "visible");
+            throttleModeLabel.html("CRUISE");
+            throttleModeLabel.removeClass("bg-blue-300");
+            throttleModeLabel.removeClass("dark:bg-blue-800");
+            throttleModeLabel.addClass("bg-purple-300");
+            throttleModeLabel.addClass("dark:bg-purple-800");
         } else {
-            cruiseLabel.style("visibility", "hidden");
+            throttleModeLabel.html("NORMAL");
+            throttleModeLabel.addClass("bg-blue-300");
+            throttleModeLabel.addClass("dark:bg-blue-800");
+            throttleModeLabel.removeClass("bg-purple-300");
+            throttleModeLabel.removeClass("dark:bg-purple-800");
         }
+        updateBars();
     }
 }
 
@@ -111,7 +123,7 @@ function draw() {
                 if (data === "pong" && !apiOnline) {
                     console.log("api on");
                     apiOnline = true;
-                    apiOfflineLabel.style("visibility", "hidden");
+                    apiOfflineLabel.style("visibility", "invisible");
                 }
             })
             .catch((error) => {

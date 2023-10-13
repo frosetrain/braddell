@@ -1,0 +1,3 @@
+libcamera-vid -v 0 -t 0 --width 480 --height 360 --framerate 24 --bitrate 250000 --hflip --vflip --inline --listen -o tcp://0.0.0.0:8069
+libcamera-jpeg --hflip --vflip -o sus.jpg -n -t 1
+ffplay tcp://raspberrypi.tail3821e.ts.net:8069 -vf "setpts=N/24" -fflags nobuffer -flags low_delay -framedrop
