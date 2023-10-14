@@ -3,12 +3,53 @@ let throttle = 0;
 let cruiseControl = false;
 let steeringLeft, steeringMiddle, steeringRight;
 let throttleLeft, throttleMiddle, throttleRight;
-let throttleModeLabel;
-let i = 0;
-let res;
+let parkbrakeLabel,
+    normalModeLabel,
+    cruiseModeLabel,
+    gamepadModeLabel,
+    reverseLabel;
+let framei = 0;
+let captureCount = 0;
 let apiOnline = false;
+let pu = false;
+let pd = false;
+let pl = false;
+let pr = false;
+let gamepadConnected = false;
+let gamepad;
+let parkbrake = true;
+let reverse = false; // this only applies to gamepad throttle
+
+const api = "http://192.168.31.69:8000";
 
 function setup() {
+    document.addEventListener("keydown", keyDownHandler, false);
+    document.addEventListener("keyup", keyUpHandler, false);
+    window.addEventListener(
+        "gamepadconnected",
+        (e) => {
+            gamepadHandler(e, true);
+        },
+        false,
+    );
+    window.addEventListener(
+        "gamepaddisconnected",
+        (e) => {
+            gamepadHandler(e, false);
+        },
+        false,
+    );
+    gameControl.on("connect", function (gamepad) {
+        gamepad.before("button2", () => {
+            reverse = reverse ? false : true;
+            if (reverse) {
+                reverseLabel.removeClass("hidden");
+            } else {
+                reverseLabel.addClass("hidden");
+            }
+        });
+    });
+
     steeringLeft = new p5.Element(document.getElementById("steering-left"));
     steeringMiddle = new p5.Element(document.getElementById("steering-middle"));
     steeringRight = new p5.Element(document.getElementById("steering-right"));
@@ -18,33 +59,108 @@ function setup() {
     throttleMiddle = new p5.Element(document.getElementById("throttle-middle"));
     throttleRight = new p5.Element(document.getElementById("throttle-right"));
     throttleLabel = new p5.Element(document.getElementById("throttle-label"));
-
+    parkbrakeLabel = new p5.Element(document.getElementById("parkbrake-label"));
     apiOfflineLabel = new p5.Element(
         document.getElementById("apioffline-label"),
     );
-    throttleModeLabel = new p5.Element(
-        document.getElementById("throttle-mode-label"),
+    normalModeLabel = new p5.Element(
+        document.getElementById("normal-mode-label"),
     );
-
+    cruiseModeLabel = new p5.Element(
+        document.getElementById("cruise-mode-label"),
+    );
+    gamepadModeLabel = new p5.Element(
+        document.getElementById("gamepad-mode-label"),
+    );
+    reverseLabel = new p5.Element(document.getElementById("reverse-label"));
+    captureButton = new p5.Element(
+        document.getElementById("btn-capture"),
+        this,
+    );
+    captureCountLabel = new p5.Element(
+        document.getElementById("capture-count"),
+    );
+    lastPhotoLabel = new p5.Element(document.getElementById("last-photo"));
+    captureButton.mousePressed(capture);
+    pingLabel = new p5.Element(document.getElementById("ping"));
+    noCanvas();
     updateBars();
     frameRate(30);
+}
+
+function capture() {
+    putData(`${api}/capture/`)
+        .then((data) => {
+            captureCount++;
+            lastPhotoLabel.html(data);
+            captureCountLabel.html(captureCount);
+        })
+        .catch((error) => {
+            lastPhotoLabel.html("ohno");
+        });
+}
+
+function keyDownHandler(event) {
+    if (event.key === "ArrowUp") {
+        pu = true;
+    } else if (event.key === "ArrowDown") {
+        pd = true;
+    } else if (event.key === "ArrowLeft") {
+        pl = true;
+    } else if (event.key === "ArrowRight") {
+        pr = true;
+    }
+}
+
+function keyUpHandler(event) {
+    if (event.key === "ArrowUp") {
+        pu = false;
+    } else if (event.key === "ArrowDown") {
+        pd = false;
+    } else if (event.key === "ArrowLeft") {
+        pl = false;
+    } else if (event.key === "ArrowRight") {
+        pr = false;
+    }
+}
+
+function gamepadHandler(event, connected) {
+    if (connected) {
+        throttle = 0;
+        steering = 0;
+        gamepadConnected = true;
+        gamepad = event.gamepad;
+        console.log("Gamepad connected", gamepad.index, gamepad.id);
+        if (cruiseControl) {
+            cruiseModeLabel.addClass("hidden");
+        } else {
+            normalModeLabel.addClass("hidden");
+        }
+        gamepadModeLabel.removeClass("hidden");
+        updateBars();
+    } else {
+        console.log("Gamepad disconnected");
+        gamepadConnected = false;
+        if (cruiseControl) {
+            cruiseModeLabel.removeClass("hidden");
+        } else {
+            normalModeLabel.removeClass("hidden");
+        }
+        gamepadModeLabel.addClass("hidden");
+    }
 }
 
 async function putData(url = "", data = {}) {
     const response = await fetch(url, {
         method: "PUT",
         mode: "cors",
-        // cache: "no-cache",
-        // credentials: "include",
         headers: {
             "Content-Type": "application/json",
-            // 'Content-Type': 'application/x-www-form-urlencoded',
         },
-        // redirect: "follow", // manual, *follow, error
         referrerPolicy: "origin", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-        body: JSON.stringify(data), // body data type must match "Content-Type" header
+        body: JSON.stringify(data),
     });
-    return response.json(); // parses JSON response into native JavaScript objects
+    return response.json();
 }
 
 function updateBars() {
@@ -70,82 +186,127 @@ function updateBars() {
     throttleMiddle.style("width", `${tmid}%`);
     throttleLabel.html(`${throttle}`);
 
-    // Put movement data to the API
-    putData("http://127.0.0.1:8000/drive/", {
-        throttle: throttle,
-        steering: steering,
-    });
-}
-
-function keyPressed() {
-    if (key === "ArrowUp" && !cruiseControl) {
-        throttle = 100;
-        updateBars();
-    } else if (key === "ArrowDown" && !cruiseControl) {
-        throttle = -100;
-        updateBars();
-    } else if (key === "c") {
-        throttle = 0;
-        cruiseControl = cruiseControl ? false : true;
-        if (cruiseControl) {
-            throttleModeLabel.html("CRUISE");
-            throttleModeLabel.removeClass("bg-blue-300");
-            throttleModeLabel.removeClass("dark:bg-blue-800");
-            throttleModeLabel.addClass("bg-purple-300");
-            throttleModeLabel.addClass("dark:bg-purple-800");
-        } else {
-            throttleModeLabel.html("NORMAL");
-            throttleModeLabel.addClass("bg-blue-300");
-            throttleModeLabel.addClass("dark:bg-blue-800");
-            throttleModeLabel.removeClass("bg-purple-300");
-            throttleModeLabel.removeClass("dark:bg-purple-800");
-        }
-        updateBars();
+    if (!parkbrake) {
+        // Put movement data to the API
+        putData(`${api}/drive/`, {
+            throttle: throttle,
+            steering: steering,
+        });
     }
 }
 
-function keyReleased() {
-    if (key === "ArrowUp" || key === "ArrowDown") {
-        if (!cruiseControl) {
+function keyPressed() {
+    if (key === "c" && !gamepadConnected) {
+        throttle = 0;
+        cruiseControl = cruiseControl ? false : true;
+        if (cruiseControl) {
+            normalModeLabel.addClass("hidden");
+            cruiseModeLabel.removeClass("hidden");
+        } else {
+            normalModeLabel.removeClass("hidden");
+            cruiseModeLabel.addClass("hidden");
+        }
+        updateBars();
+    } else if (key === "p") {
+        // parkbrake toggle
+        if (!parkbrake) {
+            steering = 0;
             throttle = 0;
             updateBars();
+            parkbrakeLabel.removeClass("hidden");
+        } else {
+            parkbrakeLabel.addClass("hidden");
         }
+        parkbrake = parkbrake ? false : true;
     }
 }
 
 function draw() {
-    ++i;
-    if (i > 15) {
-        // send a ping every 0.5 seconds
-        putData("http://127.0.0.1:8000/ping/")
+    ++framei;
+    if (framei > 30) {
+        // send a ping every second
+        let start = performance.now();
+        putData(`${api}/ping/`)
             .then((data) => {
                 // console.log(data);
+                pingLabel.html(performance.now() - start);
                 if (data === "pong" && !apiOnline) {
                     console.log("api on");
                     apiOnline = true;
-                    apiOfflineLabel.style("visibility", "invisible");
+                    apiOfflineLabel.addClass("hidden");
                 }
             })
             .catch((error) => {
                 // console.log("ERROR!");
                 apiOnline = false;
-                apiOfflineLabel.style("visibility", "visible");
+                apiOfflineLabel.removeClass("hidden");
             });
-        i = 0;
+        framei = 0;
     }
 
-    if (keyIsPressed === true) {
-        if (key === "ArrowLeft" && steering > -100) {
-            steering -= 2;
-        } else if (key === "ArrowRight" && steering < 100) {
-            steering += 2;
-        } else if (cruiseControl && key === "ArrowUp" && throttle < 100) {
-            throttle += 2;
-        } else if (cruiseControl && key === "ArrowDown" && throttle > -100) {
-            throttle -= 2;
-        } else {
-            return;
+    if (gamepadConnected) {
+        s = round(gamepad.axes[0] * 100);
+        if (abs(s) < 10) {
+            s = 0;
         }
-        updateBars();
+        if (s !== steering) {
+            steering = s;
+            updateBars();
+        }
+        t = round((gamepad.axes[5] + 1) * 50);
+        if (reverse) {
+            t = -t;
+        }
+        if (abs(t) < 2) {
+            t = 0;
+        }
+        if (t !== throttle) {
+            throttle = t;
+            updateBars();
+        }
+    } else {
+        if (pl || pr) {
+            s = steering;
+            if (pl && s > -100) {
+                s -= 2;
+            }
+            if (pr && s < 100) {
+                s += 2;
+            }
+            if (s !== steering) {
+                steering = s;
+                updateBars();
+            }
+        }
+        if (cruiseControl) {
+            t = throttle;
+            if (pu && t < 100) {
+                t += 2;
+            }
+            if (pd && t > -100) {
+                t -= 2;
+            }
+            if (t !== throttle) {
+                throttle = t;
+                updateBars();
+            }
+        } else {
+            if (pu || pd || throttle !== 0) {
+                t = throttle;
+                if (pu && pd) {
+                    t = 0;
+                } else if (pu) {
+                    t = 100;
+                } else if (pd) {
+                    t = -100;
+                } else if (throttle !== 0) {
+                    t = 0;
+                }
+                if (t !== throttle) {
+                    throttle = t;
+                    updateBars();
+                }
+            }
+        }
     }
 }

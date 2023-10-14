@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -7,8 +8,7 @@ from rich.logging import RichHandler
 
 logging.basicConfig(format="%(message)s", level=logging.DEBUG, handlers=[RichHandler()])
 
-origins = ["http://localhost:5500"]
-
+origins = ["http://127.0.0.1:5500", "http://192.168.31.48:5500"]
 
 app = FastAPI()
 app.add_middleware(
@@ -27,10 +27,19 @@ class DriveMovements(BaseModel):
 
 @app.put("/drive/")
 def drive(move: DriveMovements):
-    logging.info(move)
+    logging.debug(move)
 
 
 @app.put("/ping/")
 def ping():
     # logging.info("pong")
     return "pong"
+
+
+@app.put("/capture/")
+def capture():
+    logging.info("capture still")
+    with open("streamfifo", "w") as fifo:
+        fifo.write("c")
+        fifo.flush()
+    return "captured"

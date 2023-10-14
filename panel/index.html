@@ -4,6 +4,7 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
         <!-- <link rel="stylesheet" type="text/css" href="tailwind.css" /> -->
         <script src="https://cdn.tailwindcss.com"></script>
+        <script src="./gamecontroller.min.js"></script>
         <script>
             tailwind.config = {
                 theme: {
@@ -15,62 +16,62 @@
         </script>
         <meta charset="utf-8" />
     </head>
-    <body class="w-full bg-slate-100 p-8 dark:bg-slate-900">
+    <body class="w-full bg-gray-100 p-8 dark:bg-gray-900">
         <div id="control-bars" class="flex gap-8 pb-8">
             <div class="flex-1">
                 <div class="mb-1 flex justify-between">
-                    <span class="font-medium text-slate-900 dark:text-slate-100"
+                    <span class="font-medium text-gray-900 dark:text-gray-100"
                         >Steering</span
                     >
                     <span
                         id="steering-label"
-                        class="font-mono font-medium text-slate-900 dark:text-slate-100"
+                        class="font-mono font-medium text-gray-900 dark:text-gray-100"
                         >NaN</span
                     >
                 </div>
                 <div class="flex w-full">
                     <div
                         id="steering-left"
-                        class="h-2.5 bg-slate-600"
+                        class="h-4 bg-gray-600"
                         style="width: 50%"
                     ></div>
                     <div
                         id="steering-middle"
-                        class="h-2.5 bg-sky-500"
+                        class="h-4 bg-sky-500"
                         style="width: 0%"
                     ></div>
                     <div
                         id="steering-right"
-                        class="h-2.5 bg-slate-600"
+                        class="h-4 bg-gray-600"
                         style="width: 50%"
                     ></div>
                 </div>
             </div>
             <div class="flex-1">
                 <div class="mb-1 flex justify-between">
-                    <span class="font-medium text-slate-900 dark:text-slate-100"
+                    <span class="font-medium text-gray-900 dark:text-gray-100"
                         >Throttle</span
                     >
                     <span
                         id="throttle-label"
-                        class="font-mono font-medium text-slate-900 dark:text-slate-100"
+                        class="font-mono font-medium text-gray-900 dark:text-gray-100"
                         >NaN</span
                     >
                 </div>
                 <div class="flex w-full">
                     <div
                         id="throttle-left"
-                        class="h-2.5 bg-slate-600"
+                        class="h-4 bg-gray-600"
                         style="width: 50%"
                     ></div>
                     <div
                         id="throttle-middle"
-                        class="h-2.5 bg-green-500"
+                        class="h-4 bg-green-500"
                         style="width: 0%"
                     ></div>
                     <div
                         id="throttle-right"
-                        class="h-2.5 bg-slate-600"
+                        class="h-4 bg-gray-600"
                         style="width: 50%"
                     ></div>
                 </div>
@@ -78,59 +79,96 @@
         </div>
         <div id="indicators" class="flex justify-between pb-8">
             <div
-                class="flex gap-12 whitespace-nowrap rounded-md bg-slate-200 px-4 py-1 dark:bg-slate-800"
+                class="flex gap-12 whitespace-nowrap rounded-sm bg-gray-200 px-4 py-1 dark:bg-gray-800"
             >
-                <span
+                <p
                     id="apioffline-label"
-                    class="font-mono font-medium text-red-500"
-                    >API OFFLINE</span
+                    class="font-mono font-black text-red-500"
                 >
-                <span
+                    API OFFLINE
+                </p>
+                <p
                     id="huboffline-label"
-                    class="font-mono font-medium text-orange-500"
-                    >HUB OFFLINE</span
+                    class="font-mono font-black text-orange-500"
                 >
+                    HUB OFFLINE
+                </p>
             </div>
-            <span
-                id="throttle-mode-label"
-                class="rounded-md bg-blue-300 px-4 py-1 font-mono font-medium text-slate-900 dark:bg-blue-800 dark:text-slate-100"
-                >NORMAL</span
-            >
+            <div class="flex gap-4 whitespace-nowrap">
+                <p
+                    id="reverse-label"
+                    class="hidden font-mono rounded-sm px-4 py-1 bg-gray-300 dark:bg-gray-700 font-medium text-red-600"
+                >
+                    R
+                </p>
+                <p
+                    id="parkbrake-label"
+                    class="font-mono rounded-sm px-4 py-1 bg-amber-300 dark:bg-amber-700 font-medium text-gray-900 dark:text-gray-100"
+                >
+                    PARK
+                </p>
+                <p
+                    id="normal-mode-label"
+                    class="font-mono rounded-sm px-4 py-1 font-medium text-gray-900 bg-blue-300 dark:bg-blue-800 dark:text-gray-100"
+                >
+                    NORMAL
+                </p>
+                <p
+                    id="cruise-mode-label"
+                    class="hidden font-mono rounded-sm px-4 py-1 font-medium text-gray-900 bg-purple-300 dark:bg-purple-800 dark:text-gray-100"
+                >
+                    CRUISE
+                </p>
+                <p
+                    id="gamepad-mode-label"
+                    class="hidden font-mono rounded-sm px-4 py-1 font-medium text-gray-900 bg-emerald-300 dark:bg-emerald-800 dark:text-gray-100"
+                >
+                    GAMEPAD
+                </p>
+            </div>
         </div>
         <div
-            class="flex justify-between font-medium text-slate-900 dark:text-slate-100"
+            class="flex justify-between font-medium text-gray-900 dark:text-gray-100"
         >
             <div id="camera">
                 <p class="mb-2 text-lg font-bold">Camera</p>
                 <div class="flex gap-2">
-                    <button class="rounded-full bg-green-700">
+                    <button id="btn-capture" class="rounded-full bg-green-700">
                         <div
-                            class="m-1 flex h-10 w-10 flex-col justify-center rounded-full border-2 dark:border-green-300"
+                            class="m-1 flex h-10 w-10 flex-col justify-center rounded-full border-2 border-green-300"
                         >
-                            <p class="font-mono text-slate-100">0</p>
+                            <p
+                                id="capture-count"
+                                class="font-mono text-gray-100"
+                            >
+                                0
+                            </p>
                         </div>
                     </button>
                     <div class="my-auto ml-2">
                         <p class="font-bold">Last photo</p>
-                        <p id="last-photo" class="font-mono">none</p>
+                        <p id="last-photo" class="font-mono text-sm">none</p>
                     </div>
                 </div>
             </div>
             <div id="display">
                 <p class="mb-4 text-lg font-bold">Display</p>
                 <input
-                    class="rounded bg-slate-300 dark:bg-slate-700 px-2 py-1 ring-2 ring-slate-500"
+                    class="rounded-md bg-gray-300 dark:bg-gray-700 px-2 py-1 ring-2 ring-gray-500"
                     placeholder="Enter message"
                 />
                 <button
                     id="submit"
-                    class="ml-2 rounded-md bg-sky-300 dark:bg-sky-600 px-4 py-1.5"
+                    class="ml-2 rounded-md shadow bg-sky-300 dark:bg-sky-600 px-4 py-1.5"
                 >
                     Show
                 </button>
             </div>
         </div>
-        <main></main>
+        <p class="mt-8 text-sm text-gray-900 dark:text-gray-100">
+            Ping: <span id="ping" class="font-mono">NaN</span>
+        </p>
+        <!-- <main></main> -->
         <script src="sketch.js"></script>
     </body>
 </html>
