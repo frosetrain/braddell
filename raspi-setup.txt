@@ -1,0 +1,15 @@
+Setting up Raspberry Pi OS 12 Bookworm Lite
+(this is NOT a shell script)
+
+# Create pi account (follow wizard)
+# Install tailscale
+curl -fsSL https://pkgs.tailscale.com/stable/debian/bookworm.noarmor.gpg | sudo tee /usr/share/keyrings/tailscale-archive-keyring.gpg >/dev/null
+curl -fsSL https://pkgs.tailscale.com/stable/debian/bookworm.tailscale-keyring.list | sudo tee /etc/apt/sources.list.d/tailscale.list
+sudo apt-get update
+sudo apt-get install tailscale
+sudo tailscale up
+# Enable ssh using raspi-config
+# Send the files using rsync
+# Install dependencies
+sudo apt-get install --no-install-recommends python3-venv python3-libcamera python3-picamera2
+python3 -m venv --system-site-packages venv
