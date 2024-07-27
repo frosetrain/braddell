@@ -10,9 +10,7 @@ from picamera2.outputs import FileOutput
 
 transform = Transform(hflip=True, vflip=True)
 picam2 = Picamera2()
-video_config = picam2.create_video_configuration(
-    {"size": (480, 360)}, transform=transform
-)
+video_config = picam2.create_video_configuration({"size": (480, 360)}, transform=transform)
 capture_config = picam2.create_still_configuration(transform=transform)
 picam2.configure(video_config)
 encoder = H264Encoder(250000)
@@ -42,12 +40,7 @@ with socket(AF_INET, SOCK_STREAM) as sock:
             data = fifo.read()
             print(data)
             if data.strip() == "c":
-                filename = (
-                    "photos/"
-                    + datetime.now().strftime("BDL_%Y%m%d_%H%M%S_")
-                    + str(photo_id)
-                    + ".jpg"
-                )
+                filename = "photos/" + datetime.now().strftime("BDL_%Y%m%d_%H%M%S_") + str(photo_id) + ".jpg"
                 print("Capturing still image", filename)
                 picam2.stop_encoder()
                 picam2.switch_mode_and_capture_file(capture_config, filename)
